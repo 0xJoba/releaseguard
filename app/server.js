@@ -3,6 +3,7 @@ const http = require("node:http");
 
 const PORT = Number(process.env.PORT) || 3000;
 const RELEASE_MODE = process.env.RELEASE_MODE || "healthy";
+const RELEASE_VERSION = process.env.RELEASE_VERSION || "v1";
 
 const server = http.createServer((req, res) => {
   res.setHeader("Content-Type", "application/json");
@@ -24,7 +25,7 @@ const server = http.createServer((req, res) => {
 
     res.writeHead(200);
     return res.end(JSON.stringify({
-      release: "healthy",
+      release: RELEASE_VERSION,
       orders: [
         { id: "ORD-1001", status: "processing" },
         { id: "ORD-1002", status: "shipped" }
