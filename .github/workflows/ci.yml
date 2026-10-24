@@ -1,0 +1,40 @@
+
+name: ReleaseGuard CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Start API and run smoke tests
+        run: |
+          npm start > api.log 2>&1 &
+          API_PID=$!
+          trap 'kill "$API_PID" 2>/dev/null || true' EXIT
+
+          for i in {1..15}; do
+            if curl --fail --silent http://localhost:3000/healthz; then
+              echo "API is ready"
+              npm test
+              exit $?
+            fi
+            sleep 2
+          done
+
+          echo "API failed to become ready"
+          cat api.log
+          exit 1
